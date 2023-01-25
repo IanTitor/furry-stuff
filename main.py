@@ -70,8 +70,14 @@ class Level_1:
         self.attack_type = 0
         self.attack_effect = 0
         self.attack_radius = 0
+        self.attack_cooldown = 0
         self.boss_hp = 100
         self.fighter_hp = 100
+        self.boss_move = 0
+        self.boss_speed = 30
+        self.fighter_hit = False
+        self.fighter_sprite = pygame.image.load('fighter.png')
+        self.boss_sprite = pygame.image.load('boss.png)
 
     def handle_events(self, events: List[pygame.event.Event]) -> None:
         for event in events:
@@ -85,6 +91,30 @@ class Level_1:
         
     def update(self) -> None:
         clock.tick(FPS)
+        self.attack_cooldown -= 1
+
+        #distance claculation
+        distance = ((self.fighter_x - self.boss_x) ** 2 + (self.fighter_y - self.boss_y) ** 2) ** (1/2)
+
+        #game detect
+        if self.boss_hp <= 0:
+            print('fighter wins')
+            print('hp:', self.boss_hp, self.fighter_hp)
+            exit()
+        if self.fighter_hp <= 0:
+            print('fighter loses')
+            print('hp:', self.boss_hp, self.fighter_hp)
+            exit()
+
+        #boss
+        self.boss_move = self.boss_move * 0.9 + (self.fighter_x - self.boss_x) * 0.1
+        self.boss_x += (self.boss_move / abs(self.boss_move)) * min(abs(self.boss_move), self.boss_speed)
+        if self.boss_speed < self.fighter_speed:
+            self.boss_speed += 1
+        if distance < 100:
+            self.fighter_hit = True
+            self.fighter_hp -= 1
+
 
         #keypress
         keys = pygame.key.get_pressed()
@@ -116,33 +146,44 @@ class Level_1:
                 self.jump_height = 10
 
         #attack detection
-        if keys[pygame.K_w] or keys[pygame.K_s]:
+        if (keys[pygame.K_w] or keys[pygame.K_s]) and self.attack_cooldown <= 0:
             if keys[pygame.K_w]:
                 self.attack_type = 1
-                print('ass')
+                self.attack_cooldown = 10
             if keys[pygame.K_s]:
                 self.attack_type = 2
-                print('shit')
+                self.attack_cooldown = 100
 
         #attacking
         if self.attack_type:
-            if ((self.fighter_x - self.boss_x) ** 2 + (self.fighter_y - self.boss_y) ** 2) ** (1/2) < 200:
-                print('can hit')
+            if distance < 300:
                 self.attack_radius = 200
                 self.attack_effect = self.attack_type
-                self.boss_hp -= 5 * self.attack_type
-                print('boss', self.boss_hp)
-                if self.boss_hp <= 0:
-                    self.current_screen = main_menu()
+                if self.attack_type == 2:
+                    self.boss_speed = 1
+                self.boss_hp -= self.attack_type
             self.attack_type = 0
 
 
 
     def draw(self, surface: pygame.Surface) -> None:
         surface.blit(self.background, (0,0))
+
+        pygame.draw.rect(surface, (0, 0, 255), (10, 10, 10 + 540 * (self.fighter_hp) / 100, 50)) #main fighter hp
+        pygame.draw.rect(surface, (0, 255, 0), (10, 60, 10 + 540 * (self.boss_hp) / 100, 50)) #the boss hp
+
+        """
         pygame.draw.rect(surface, (0, 0, 255), (self.fighter_x, self.fighter_y, 125, 250)) #main fighter character
         pygame.draw.rect(surface, (0, 255, 0), (self.boss_x, self.boss_y, 125, 250)) # the boss
+        """
+        surface.blit(self.fighter_sprite, (self.fighter_x, self.fighter_y, 125, 250))
+        surface.blit(self.boss_sprite, (self.boss_x, self.boss_y, 125, 250))
+
+        #attack stuff
         attack_color = {1: (255, 0, 0), 2: (255, 255, 0)}
+        if self.fighter_hit:
+            self.fighter_hit = False
+            pygame.draw.circle(surface, (255, 255, 255), (self.fighter_x, self.fighter_y), 100)
         if self.attack_effect:
             pygame.draw.circle(surface, attack_color[self.attack_effect], (self.boss_x, self.boss_y), self.attack_radius)
             if self.attack_radius > 0:
