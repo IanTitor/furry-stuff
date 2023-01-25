@@ -61,11 +61,17 @@ class Level_1:
         self.ground = 965
         self.fighter_x = 810
         self.fighter_y = 710
+        self.boss_x = 1750
+        self.boss_y = 710
         self.fighter_speed = 30
         self.jumping = False
         self.jump_height = 10
         self.vel_y = self.jump_height
         self.attack_type = 0
+        self.attack_effect = 0
+        self.attack_radius = 0
+        self.boss_hp = 100
+        self.fighter_hp = 100
 
     def handle_events(self, events: List[pygame.event.Event]) -> None:
         for event in events:
@@ -109,21 +115,40 @@ class Level_1:
                 self.jumping = False
                 self.jump_height = 10
 
-        #attacks
+        #attack detection
         if keys[pygame.K_w] or keys[pygame.K_s]:
             if keys[pygame.K_w]:
                 self.attack_type = 1
-                print('cum')
-                self.attack_hitbox = pygame.Rect(self.fighter_x + 50, self.fighter_y, 20, 50)
-                pygame.draw.rect(pygame.Surface, (255, 0, 0), attack_rec, 2)
+                print('ass')
             if keys[pygame.K_s]:
                 self.attack_type = 2
-                print('squirt')
+                print('shit')
+
+        #attacking
+        if self.attack_type:
+            if ((self.fighter_x - self.boss_x) ** 2 + (self.fighter_y - self.boss_y) ** 2) ** (1/2) < 200:
+                print('can hit')
+                self.attack_radius = 200
+                self.attack_effect = self.attack_type
+                self.boss_hp -= 5 * self.attack_type
+                print('boss', self.boss_hp)
+                if self.boss_hp <= 0:
+                    self.current_screen = main_menu()
+            self.attack_type = 0
+
+
 
     def draw(self, surface: pygame.Surface) -> None:
         surface.blit(self.background, (0,0))
         pygame.draw.rect(surface, (0, 0, 255), (self.fighter_x, self.fighter_y, 125, 250)) #main fighter character
-        pygame.draw.rect(surface, (0, 255, 0), (1750, 710, 125, 250)) # the boss
+        pygame.draw.rect(surface, (0, 255, 0), (self.boss_x, self.boss_y, 125, 250)) # the boss
+        attack_color = {1: (255, 0, 0), 2: (255, 255, 0)}
+        if self.attack_effect:
+            pygame.draw.circle(surface, attack_color[self.attack_effect], (self.boss_x, self.boss_y), self.attack_radius)
+            if self.attack_radius > 0:
+                self.attack_radius -= 5
+            else:
+                self.attack_effect = 0
         
 #================================================================================================
 
@@ -169,69 +194,6 @@ class main_menu:
         pygame.draw.rect(surface, self.blue, self.game2_button)
         pygame.draw.rect(surface, self.yellow, self.game3_button)
         pygame.draw.rect(surface, self.green, self.game4_button)
-
-#================================================================================================
-
-
-class Level_2:
-
-    def __init__(self) -> None:  #variables
-        self.circle_x = 500
-        self.circle_y = 100
-
-    def handle_events(self, events: List[pygame.event.Event]) -> None:
-        ...  #events
-
-    def update(self) -> None:  #math
-        self.circle_y += 1
-
-    def draw(self, surface: pygame.Surface) -> None:  #drawing
-        surface.fill((0, 0, 255))  # always the first drawing command
-        pygame.draw.circle(surface, (0, 255, 0),
-                           (self.circle_x, self.circle_y), 30)
-
-
-#================================================================================================
-
-
-class Level_3:
-
-    def __init__(self) -> None:
-        self.circle_x = 500
-        self.circle_y = 100
-
-    def handle_events(self, events: List[pygame.event.Event]) -> None:
-        ...
-
-    def update(self) -> None:
-        self.circle_y += 1
-
-    def draw(self, surface: pygame.Surface) -> None:
-        surface.fill((0, 0, 255))  # always the first drawing command
-        pygame.draw.circle(surface, (0, 255, 0),
-                           (self.circle_x, self.circle_y), 30)
-
-
-#================================================================================================
-
-
-class Level_4:
-
-    def __init__(self) -> None:
-        self.circle_x = 500
-        self.circle_y = 100
-
-    def handle_events(self, events: List[pygame.event.Event]) -> None:
-        ...
-
-    def update(self) -> None:
-        self.circle_y += 1
-
-    def draw(self, surface: pygame.Surface) -> None:
-        surface.fill((0, 0, 255))  # always the first drawing command
-        pygame.draw.circle(surface, (0, 255, 0),
-                           (self.circle_x, self.circle_y), 30)
-
 
 #================================================================================================
 
