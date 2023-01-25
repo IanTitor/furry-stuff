@@ -76,8 +76,8 @@ class Level_1:
         self.boss_move = 0
         self.boss_speed = 30
         self.fighter_hit = False
-        self.fighter_sprite = pygame.image.load('fighter.png')
-        self.boss_sprite = pygame.image.load('boss.png)
+        self.fighter_sprite = pygame.image.load('fighter.jpeg')
+        self.boss_sprite = pygame.image.load('boss.jpeg')
 
     def handle_events(self, events: List[pygame.event.Event]) -> None:
         for event in events:
